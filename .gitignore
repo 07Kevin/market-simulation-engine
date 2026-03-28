@@ -42,3 +42,8 @@
 
 # visual studio
 .vs/
+/out/build/x64-debug
+/out/build/x64-debug/.cmake/api/v1
+/out/build/x64-debug/.cmake/api/v1/query/client-MicrosoftVS
+/out/build/x64-debug/.cmake/api/v1/query/client-MicrosoftVS/query.json
+/out/build/x64-debug/.cmake/api/v1/reply
