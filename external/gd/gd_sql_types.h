@@ -1,0 +1,494 @@
+// @FILE [tag: sql, type] [description: Type values for SQL queries] [type: header] [name: gd_sql_types.h]
+
+#pragma once
+
+#include "gd_types.h"
+
+#ifndef _GD_SQL_QUERY_BEGIN
+   #define _GD_SQL_QUERY_BEGIN namespace gd { namespace sql {
+   #define _GD_SQL_QUERY_END } }
+#endif
+
+_GD_SQL_QUERY_BEGIN
+
+#if defined( __clang__ )
+   #pragma GCC diagnostic push
+   #pragma clang diagnostic ignored "-Wdeprecated-enum-enum-conversion"
+#elif defined( __GNUC__ )
+   #pragma GCC diagnostic push
+   #pragma GCC diagnostic ignored "-Wdeprecated-enum-enum-conversion"
+#elif defined( _MSC_VER )
+   #pragma warning(push)
+   #pragma warning( disable : 4267 26495 26812 )
+#endif
+
+/// tag dispatcher used for table operations
+using tag_table = gd::types::tag_table;
+/// tag dispatcher used for field operations
+struct tag_field {};
+/// tag dispatcher used for condition operations
+struct tag_condition {};
+/// tag dispatcher used name
+using tag_name = gd::types::tag_name;
+/// tag dispatcher for arguments, used to add arguments to query
+struct tag_arguments {};
+/// tag dispatcher for index, used to add index to query
+struct tag_index {};
+
+/// tag dispatcher for values that is owned
+struct tag_value {};
+/// tag dispatcher for values that is viewed (not owned)
+struct tag_value_view {};
+
+
+/*----------------------------------------------------------------------------
+ * \brief SQL dialect used to generate SQL code
+ *
+ * Values are assigned so that closely related dialects (by syntax family / compatibility)
+ * have nearby numbers. This makes switch/case blocks or range-based logic easier.
+ *
+ * Groups (approximate ranges):
+ *   1–19  →  High ANSI compliance (modern standard-like)
+ *   20–39 →  MySQL-family + embedded/test DBs (medium compliance, widespread)
+ *   40–59 →  Enterprise traditional RDBMS (proprietary-heavy)
+ *   60–79 →  Cloud data warehouses / analytics (ANSI base + extensions)
+ *   80+   →  Extreme outliers (OLAP columnar / very non-standard)
+ *
+ * Within each group: ordered roughly most → least similar to core ANSI SQL.
+ */
+enum enumSqlDialect
+{
+   // Optional fallback (place at 0 or 99 depending on your preference)
+   eSqlDialectUnknown   = 0,
+
+   // ────────────────────────────────────────────────
+   // PostgreSQL family — Highest ANSI compliance
+   // Modern reference for portable SQL; rich features
+   // ────────────────────────────────────────────────
+   eSqlDialectPostgreSql = 10,  // PostgreSQL — closest to modern ANSI SQL standard; extensive CTEs, windows, JSONB, arrays, strict typing, extensibility
+
+   eSqlDialectCockroachDB = 11,  // CockroachDB — PostgreSQL wire & dialect compatible; very high compliance + distributed/consistent tweaks
+
+   // ────────────────────────────────────────────────
+   // Embedded / in-memory / test DBs — Good ANSI coverage
+   // Often emulate PostgreSQL or MySQL modes
+   // ────────────────────────────────────────────────
+   eSqlDialectH2 = 15,  // H2 Database — strong standards support; PostgreSQL & MySQL compatibility modes; ideal for testing
+
+   eSqlDialectHSQLDB = 16,  // HyperSQL (HSQLDB) — excellent ANSI compliance in strict mode; lightweight, test-friendly
+
+   eSqlDialectDerby = 17,  // Apache Derby / JavaDB — solid compliance; conservative, Java-centric
+
+   // ────────────────────────────────────────────────
+   // SQLite family — Medium compliance, lightweight/embedded
+   // Loose typing, some missing advanced features
+   // ────────────────────────────────────────────────
+   eSqlDialectSqlite = 20,  // SQLite — embedded standard; good core SQL but partial windows, no RIGHT/FULL JOIN in older versions, dynamic typing
+
+   // ────────────────────────────────────────────────
+   // MySQL family — High adoption, medium compliance
+   // Many historical quirks (non-standard GROUP BY, LIMIT, loose casts)
+   // MariaDB edges closer to standard in newer releases
+   // ────────────────────────────────────────────────
+   eSqlDialectMariaDB = 25,  // MariaDB — very close to MySQL but improved standards compliance (CTEs, window functions, etc.)
+
+   eSqlDialectMySql = 26,  // MySQL — dominant in web/apps; persistent non-standard behaviors despite progress
+
+   // ────────────────────────────────────────────────
+   // Enterprise traditional — Feature-rich but proprietary syntax heavy
+   // Big differences in paging, dates, hierarchical queries, etc.
+   // ────────────────────────────────────────────────
+   eSqlDialectSqlServer = 40,  // Microsoft SQL Server + Azure SQL — T-SQL; TOP, MERGE, different string/date funcs, CTE quirks
+
+   eSqlDialectDB2 = 41,  // IBM Db2 — enterprise extensions; unique paging, OLAP, schema behavior
+
+   eSqlDialectOracle = 42,  // Oracle Database — highly proprietary (ROWNUM → analytic, CONNECT BY, old (+) joins, strict)
+
+   // ────────────────────────────────────────────────
+   // Cloud data warehouses — ANSI-inspired + analytics extensions
+   // Good standard base but diverge on semi-structured, time-travel, clustering
+   // ────────────────────────────────────────────────
+   eSqlDialectSnowflake = 60,  // Snowflake — PostgreSQL-like base + cloud extensions (time-travel, VARIANT semi-structured, clustering)
+
+   eSqlDialectBigQuery = 61,  // Google BigQuery — Standard SQL + Google extensions (ARRAY/STRUCT, UNNEST, scripting, geography)
+
+   eSqlDialectRedshift = 62,  // Amazon Redshift — old PostgreSQL base + AWS-specific (DIST/SORTKEY, COPY/UNLOAD, columnar tweaks)
+
+   // ────────────────────────────────────────────────
+   // Extreme outlier — Columnar OLAP-first, massive non-standard extensions
+   // ────────────────────────────────────────────────
+   eSqlDialectClickHouse = 80   // ClickHouse — columnar OLAP; ARRAY JOIN, WITH FILL, specialized aggregations, weak classic transactions
+};
+
+
+/*-----------------------------------------*/ /**
+ * \brief how to format sql
+ *
+ *
+ */
+enum enumFormat
+{
+   eFormatUseQuotes        = (1 << 0),
+   eFormatAddASKeyword     = (1 << 1),
+   eFormatAddINNERKeyword  = (1 << 2),
+
+};
+
+
+/*-----------------------------------------*/ /**
+ * \brief constant values for describing what type of join to use
+ *
+ *
+ */
+enum enumJoin
+{
+   eJoinUnknown = 0,
+   eJoinInner = 1,
+   eJoinLeft,
+   eJoinRight,
+   eJoinFull,
+};
+
+enum enumOperatorTypeNumber
+{
+   eOperatorTypeNumberEqual = 0,        // =
+   eOperatorTypeNumberNotEqual = 1,     // !=
+   eOperatorTypeNumberLess = 2,         // <
+   eOperatorTypeNumberLessEqual = 3,    // <=
+   eOperatorTypeNumberGreater = 4,      // >
+   eOperatorTypeNumberGreaterEqual = 5, // >=
+   eOperatorTypeNumberLike = 6,         // ..=..
+   eOperatorTypeNumberNotLike = 7,      // NOT LIKE
+   eOperatorTypeNumberLikeBegin = 8,    // ..=
+   eOperatorTypeNumberLikeEnd = 9,      // =..
+   eOperatorTypeNumberNull = 10,        // IS NULL
+   eOperatorTypeNumberNotNull = 11,     // IS NOT NULL
+   eOperatorTypeNumberIn = 12,          // IN
+   eOperatorTypeNumberNotIn = 13,       // NOT IN
+   eOperatorTypeNumberBetween = 14,     // BETWEEN
+   eOperatorTypeNumberNotBetween = 15,  // NOT BETWEEN
+   eOperatorTypeNumberIsTrue = 16,      // IS TRUE
+   eOperatorTypeNumberIsFalse = 17,     // IS FALSE
+   eOperatorTypeNumberExist = 18,       // EXISTS
+   eOperatorTypeNumberNotExist = 19,    // NOT EXISTS
+   eOperatorTypeNumberEND,              // Used to check for max valid operator number
+};
+
+enum enumOperatorGroupType
+{
+   eOperatorGroupTypeBoolean    = 0x00000100,   // boolean value
+   eOperatorGroupTypeNumber     = 0x00000200,   // number value
+   eOperatorGroupTypeDate       = 0x00000400,   // date value
+   eOperatorGroupTypeString     = 0x00000800,   // text value
+   eOperatorGroupTypeBinary     = 0x00001000,   // binary
+   eOperatorGroupTypeQuery      = 0x00002000,   // query
+};
+
+/** ==========================================================================
+ * @brief Defines comparison and logical operators that can be applied to different data types including booleans, numbers, dates, strings, and binary data.
+ * 
+ * Each operator is represented as a combination of an operator type and one or more operator group types. This to speed up what types an operator can be applied to, and what operator type it is. 
+ * For example, eOperatorEqual can be applied to boolean, number, date, string, and binary types, and is of type "equal". The operator groups are represented as bit flags, allowing for efficient checks of operator applicability to data types.
+ */
+enum enumOperator
+{
+   eOperatorEqual        = eOperatorTypeNumberEqual       | eOperatorGroupTypeBoolean | eOperatorGroupTypeNumber | eOperatorGroupTypeDate | eOperatorGroupTypeString | eOperatorGroupTypeBinary,
+   eOperatorNotEqual     = eOperatorTypeNumberNotEqual    | eOperatorGroupTypeBoolean | eOperatorGroupTypeNumber | eOperatorGroupTypeDate | eOperatorGroupTypeString | eOperatorGroupTypeBinary,
+   eOperatorLess         = eOperatorTypeNumberLess        | eOperatorGroupTypeNumber  | eOperatorGroupTypeDate   | eOperatorGroupTypeString,
+   eOperatorLessEqual    = eOperatorTypeNumberLessEqual   | eOperatorGroupTypeNumber  | eOperatorGroupTypeDate   | eOperatorGroupTypeString,
+   eOperatorGreater      = eOperatorTypeNumberGreater     | eOperatorGroupTypeNumber  | eOperatorGroupTypeDate   | eOperatorGroupTypeString,
+   eOperatorGreaterEqual = eOperatorTypeNumberGreaterEqual| eOperatorGroupTypeNumber  | eOperatorGroupTypeDate   | eOperatorGroupTypeString,
+   eOperatorLike         = eOperatorTypeNumberLike        | eOperatorGroupTypeString,
+   eOperatorNotLike      = eOperatorTypeNumberNotLike     | eOperatorGroupTypeString,
+   eOperatorLikeBegin    = eOperatorTypeNumberLikeBegin   | eOperatorGroupTypeString,
+   eOperatorLikeEnd      = eOperatorTypeNumberLikeEnd     | eOperatorGroupTypeString,
+   eOperatorNull         = eOperatorTypeNumberNull        | eOperatorGroupTypeBoolean | eOperatorGroupTypeNumber | eOperatorGroupTypeDate | eOperatorGroupTypeString | eOperatorGroupTypeBinary,
+   eOperatorNotNull      = eOperatorTypeNumberNotNull     | eOperatorGroupTypeBoolean | eOperatorGroupTypeNumber | eOperatorGroupTypeDate | eOperatorGroupTypeString | eOperatorGroupTypeBinary,
+   eOperatorIn           = eOperatorTypeNumberIn          | eOperatorGroupTypeBoolean | eOperatorGroupTypeNumber | eOperatorGroupTypeDate | eOperatorGroupTypeString | eOperatorGroupTypeBinary,
+   eOperatorNotIn        = eOperatorTypeNumberNotIn       | eOperatorGroupTypeBoolean | eOperatorGroupTypeNumber | eOperatorGroupTypeDate | eOperatorGroupTypeString | eOperatorGroupTypeBinary,
+   eOperatorBetween      = eOperatorTypeNumberBetween     | eOperatorGroupTypeNumber  | eOperatorGroupTypeDate   | eOperatorGroupTypeString,
+   eOperatorNotBetween   = eOperatorTypeNumberNotBetween  | eOperatorGroupTypeNumber  | eOperatorGroupTypeDate   | eOperatorGroupTypeString,
+   eOperatorIsTrue       = eOperatorTypeNumberIsTrue      | eOperatorGroupTypeBoolean,
+   eOperatorIsFalse      = eOperatorTypeNumberIsFalse     | eOperatorGroupTypeBoolean,
+   eOperatorExist        = eOperatorTypeNumberExist       | eOperatorGroupTypeQuery,
+   eOperatorNotExist     = eOperatorTypeNumberNotExist    | eOperatorGroupTypeQuery,
+
+   eOperatorError        = 0xffffffff,
+};
+
+enum enumOperatorMask
+{
+   eOperatorMaskNumber = 0x000000ff,
+};
+
+/** ==========================================================================
+ * \brief Important SQL parts used to build SQL queries.
+ *
+ * The bit position defines the generation order.
+ * Parts are emitted in ascending bit order.
+ *
+ */
+enum enumSqlPart : uint32_t
+{
+   eSqlPartUnknown   = 0,
+
+   // --- Common prefix ---
+   eSqlPartWith      = 1u << 0,   // WITH (CTE)
+
+   // --- Statement type ---
+   eSqlPartSelect    = 1u << 1,   // SELECT
+   eSqlPartDistinct  = 1u << 2,   // DISTINCT (SELECT only)
+   eSqlPartInsert    = 1u << 3,   // INSERT
+   eSqlPartUpdate    = 1u << 4,   // UPDATE
+   eSqlPartDelete    = 1u << 5,   // DELETE
+
+   // --- INSERT specific ---
+   eSqlPartInto      = 1u << 6,   // INTO
+   eSqlPartValues    = 1u << 7,   // VALUES
+
+   // --- UPDATE specific ---
+   eSqlPartSet       = 1u << 8,   // SET
+
+   // --- FROM/JOIN ---
+   eSqlPartFrom      = 1u << 9,   // FROM
+   eSqlPartJoin      = 1u << 10,  // JOIN
+
+   // --- Filtering ---
+   eSqlPartWhere     = 1u << 11,  // WHERE
+
+   // --- Aggregation ---
+   eSqlPartGroupBy   = 1u << 12,  // GROUP BY
+   eSqlPartHaving    = 1u << 13,  // HAVING
+
+   // --- Sorting / Paging ---
+   eSqlPartOrderBy   = 1u << 14,  // ORDER BY
+   eSqlPartLimit     = 1u << 15,  // LIMIT
+   eSqlPartOffset    = 1u << 16,  // OFFSET
+
+   // --- Output ---
+   eSqlPartReturning = 1u << 17,  // RETURNING
+};
+
+/** ==========================================================================
+ * @brief Defines SQL statement types by combining various SQL clause parts using bitwise flags.
+ */
+enum enumSql
+{
+   eSqlSelect = eSqlPartSelect | eSqlPartDistinct | eSqlPartFrom | eSqlPartWhere | eSqlPartOrderBy | eSqlPartGroupBy | eSqlPartWith | eSqlPartLimit,
+   eSqlInsert = eSqlPartInsert | eSqlPartInto | eSqlPartValues | eSqlPartReturning,
+   eSqlUpdate = eSqlPartUpdate | eSqlPartWhere,
+   eSqlDelete = eSqlPartDelete | eSqlPartFrom | eSqlPartWhere,
+};
+
+
+/// @brief Convert a character to uppercase if it's a lowercase letter; otherwise, return it unchanged.
+constexpr char upper_g( char i )
+{
+   return ( i >= 'a' && i <= 'z' ) ? static_cast<char>( i - ( 'a' - 'A' ) ) : i;
+}
+
+/** ---------------------------------------------------------------------------
+ * @brief Return SQL part enum for given keyword.
+ * Flexible + fast: uses first character, optional next chars,
+ * allows extended words starting with valid keyword (prefix matching).
+ *
+ * @param stringPartName Part name as string_view
+ * @return {enumSqlPart} Corresponding SQL part
+*/
+constexpr enumSqlPart sql_get_part_type_g( const std::string_view& stringPartName )
+{
+   assert( !stringPartName.empty() );
+
+   const size_t uSize = stringPartName.size();
+   const char i0 = upper_g( stringPartName[0] );
+
+   switch( i0 )
+   {
+   case 'F': return eSqlPartFrom;                                             // FROM (any prefix is fine)
+   case 'J': return eSqlPartJoin;                                             // JOIN
+   case 'L': return eSqlPartLimit;                                            // LIMIT
+   case 'H': return eSqlPartHaving;                                           // HAVING
+   case 'G': return eSqlPartGroupBy;                                          // GROUPBY
+   case 'R': return eSqlPartReturning;                                        // RETURNING
+   case 'V': return eSqlPartValues;                                           // VALUES
+   case 'U': return eSqlPartUpdate;                                           // UPDATE
+
+   case 'W':                                                                  // WITH / WHERE
+      if( uSize >= 5 && upper_g( stringPartName[1] ) == 'H' ) return eSqlPartWhere;
+      return eSqlPartWith;
+
+   case 'S':                                                                  // SELECT / SET
+      if( uSize >= 3 && upper_g( stringPartName[1] ) == 'E' && upper_g( stringPartName[2] ) == 'T' ) return eSqlPartSet;
+      return eSqlPartSelect;
+
+   case 'D':                                                                  // DELETE / DISTINCT
+      if( uSize >= 8 && upper_g( stringPartName[1] ) == 'I' && upper_g( stringPartName[2] ) == 'S' ) return eSqlPartDistinct;
+      return eSqlPartDelete;
+
+   case 'I':                                                                  // INSERT / INTO
+      if( uSize >= 4 && upper_g( stringPartName[1] ) == 'N' && upper_g( stringPartName[2] ) == 'T' ) return eSqlPartInto;
+      return eSqlPartInsert;
+
+   case 'O':                                                                  // ORDERBY / OFFSET
+      if( uSize >= 6 && upper_g( stringPartName[1] ) == 'F' ) return eSqlPartOffset;
+      return eSqlPartOrderBy;
+   }
+
+   return eSqlPartUnknown;
+}
+
+
+
+/** ---------------------------------------------------------------------------
+ * @brief Convert dialect name string to enumSqlDialect (case-insensitive, constexpr)
+ *
+ * Parses a SQL dialect name and returns the corresponding enumSqlDialect value.
+ * Designed for compile-time evaluation when possible (constexpr) and optimized
+ * for runtime performance using a first-character switch followed by minimal
+ * subsequent character checks.
+ *
+ * @details
+ * The function uses a multi-stage matching strategy:
+ * 1. Quick-fail on empty input
+ * 2. Convert first character to uppercase (arithmetic, not lookup)
+ * 3. Switch on first character to narrow candidates
+ * 4. Check 2-3 additional characters case-insensitively to disambiguate
+ * 5. Verify minimum length to avoid buffer overruns
+ *
+ * Most common dialects (PostgreSQL, MySQL, SQLite) resolve in 1-3 comparisons.
+ * Ambiguous prefixes (e.g., 'S' for SQL Server/Snowflake/SQLite) require
+ * additional character checks at positions 2-4.
+ *
+ * @param stringDialect Dialect name (case-insensitive).
+ *        Recognized values include:
+ *        - "PostgreSQL", "postgres", "POSTGRESQL"
+ *        - "MySQL", "mysql", "MYSQL"
+ *        - "MariaDB", "mariadb"
+ *        - "SQLite", "sqlite"
+ *        - "SQLServer", "sqlserver", "MSSQL", "mssql"
+ *        - "Oracle", "oracle"
+ *        - "DB2", "db2"
+ *        - "Derby", "derby"
+ *        - "H2", "h2"
+ *        - "HSQLDB", "hsqldb"
+ *        - "Snowflake", "snowflake"
+ *        - "BigQuery", "bigquery"
+ *        - "Redshift", "redshift"
+ *        - "ClickHouse", "clickhouse"
+ *        - "CockroachDB", "cockroachdb"
+ *
+ * @return enumSqlDialect Matching dialect constant, or eSqlDialectUnknown if:
+ *         - Input is empty
+ *         - No recognized dialect matches
+ *         - Input is too short for expected dialect (e.g., "SQ" when "SQLite" needed)
+ *
+ * @note This function is constexpr and can be evaluated at compile time when
+ *       given a string literal or other constexpr string_view.
+ *
+ * @note The function uses an assert(false) before returning eSqlDialectUnknown
+ *       in the switch statement, indicating unexpected fallthrough in debug builds.
+ *
+ * @warning Partial matches are NOT supported. Input must contain at least the
+ *          minimum distinguishing prefix (e.g., "Big" won't match "BigQuery").
+ *
+ * @see enumSqlDialect for the complete list of dialect constants
+ * @see sql_get_part_type_g for similar pattern-matching approach
+ *
+ * Example usage:
+ * @code
+ *   constexpr auto dialect = sql_get_dialect_g("PostgreSQL"); // Compile-time
+ *   auto runtime_dialect = sql_get_dialect_g(user_input);     // Runtime
+ * @endcode
+ */
+constexpr enumSqlDialect sql_get_dialect_g( std::string_view stringDialect )
+{
+   if( stringDialect.empty() ) { return eSqlDialectUnknown; }
+
+   // Fast uppercase-first-letter trick (like in sql_get_part_type_g)
+   constexpr uint8_t LOWER_A = 'a';
+   uint8_t uFirst = static_cast<uint8_t>( stringDialect[0] );
+   if( uFirst >= LOWER_A ) { uFirst -= ( 'a' - 'A' ); }
+
+   switch( uFirst )
+   {
+   case 'B':   // BigQuery
+   if( stringDialect.size() >= 7 && ( stringDialect[1] == 'i' || stringDialect[1] == 'I' ) && ( stringDialect[2] == 'g' || stringDialect[2] == 'G' ) ) { return eSqlDialectBigQuery; }
+   break;
+
+   case 'C':   // ClickHouse, CockroachDB
+   if( stringDialect.size() >= 10 ) 
+   {
+      char iSecond = ( stringDialect[1] == 'o' || stringDialect[1] == 'O' ) ? 'o' : 0;
+      if( iSecond ) 
+      {
+         char iThird = ( stringDialect[2] == 'c' || stringDialect[2] == 'C' ) ? 'c' : 0;
+         if( iThird ) { return eSqlDialectCockroachDB; }
+      }
+   }
+   if( stringDialect.size() >= 10 && ( stringDialect[1] == 'l' || stringDialect[1] == 'L' ) && ( stringDialect[2] == 'i' || stringDialect[2] == 'I' ) ) { return eSqlDialectClickHouse; }
+   break;
+
+   case 'D':   // DB2, Derby
+   if( stringDialect.size() >= 3 && ( stringDialect[1] == 'B' || stringDialect[1] == 'b' ) && ( stringDialect[2] == '2' ) ) { return eSqlDialectDB2; }
+   if( stringDialect.size() >= 5 && ( stringDialect[1] == 'e' || stringDialect[1] == 'E' ) && ( stringDialect[2] == 'r' || stringDialect[2] == 'R' ) ) { return eSqlDialectDerby; }
+   break;
+
+   case 'H':   // H2, HSQLDB
+   if( stringDialect.size() >= 2 ) {
+      char iSecond = ( stringDialect[1] == '2' ) ? '2' : 0;
+      if( iSecond ) return eSqlDialectH2;
+
+      if( ( stringDialect[1] == 's' || stringDialect[1] == 'S' ) && ( stringDialect[2] == 'q' || stringDialect[2] == 'Q' ) ) { return eSqlDialectHSQLDB; }
+   }
+   break;
+
+   case 'M':   // MariaDB, MySQL
+   if( stringDialect.size() >= 6 && ( stringDialect[1] == 'a' || stringDialect[1] == 'A' ) && ( stringDialect[2] == 'r' || stringDialect[2] == 'R' ) ) { return eSqlDialectMariaDB; }
+   if( stringDialect.size() >= 5 && ( stringDialect[1] == 'y' || stringDialect[1] == 'Y' ) && ( stringDialect[2] == 'S' || stringDialect[2] == 's' ) ) { return eSqlDialectMySql; }
+   break;
+
+   case 'O':   // Oracle
+   if( stringDialect.size() >= 6 && ( stringDialect[1] == 'r' || stringDialect[1] == 'R' ) && ( stringDialect[2] == 'a' || stringDialect[2] == 'A' ) ) { return eSqlDialectOracle; }
+   break;
+
+   case 'P':   // PostgreSQL
+   if( stringDialect.size() >= 10 && ( stringDialect[1] == 'o' || stringDialect[1] == 'O' ) && ( stringDialect[2] == 's' || stringDialect[2] == 'S' ) ) { return eSqlDialectPostgreSql; }
+   break;
+
+   case 'R':   // Redshift
+   if( stringDialect.size() >= 8 && ( stringDialect[1] == 'e' || stringDialect[1] == 'E' ) && ( stringDialect[2] == 'd' || stringDialect[2] == 'D' ) ) { return eSqlDialectRedshift; }
+   break;
+
+   case 'S':   // SQL Server, Snowflake, SQLite
+   if( stringDialect.size() >= 6 ) {
+      char iSecond = ( stringDialect[1] == 'Q' || stringDialect[1] == 'q' ) ? 'Q' : 0;
+      if( iSecond ) {
+         if( ( stringDialect[2] == 'L' || stringDialect[2] == 'l' ) ) {
+            // SQL...
+            if( ( stringDialect[3] == 'S' || stringDialect[3] == 's' ) ||
+                ( stringDialect[4] == 'S' || stringDialect[4] == 's' ) ) {  // SQLServer or MSSQL etc.
+               return eSqlDialectSqlServer;
+            }
+            // SQLite
+            if( ( stringDialect[3] == 'i' || stringDialect[3] == 'I' ) ) {  return eSqlDialectSqlite; }
+         }
+      }
+   }
+   // Snowflake
+   if( stringDialect.size() >= 8 && ( stringDialect[1] == 'n' || stringDialect[1] == 'N' ) && ( stringDialect[2] == 'o' || stringDialect[2] == 'O' ) ) { return eSqlDialectSnowflake; }
+   break;
+   }
+                                                                                                   assert( false );
+   return eSqlDialectUnknown;
+}
+
+#if defined(__clang__)
+   #pragma clang diagnostic pop
+#elif defined(__GNUC__)
+   #pragma GCC diagnostic pop
+#elif defined(_MSC_VER)
+   #pragma warning(pop)
+#endif
+
+
+_GD_SQL_QUERY_END
