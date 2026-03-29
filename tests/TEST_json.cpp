@@ -12,8 +12,8 @@ using jsoncons::json;
 
 TEST_CASE("Read JSON file", "[read]")
 {
-   std::cout << "Test";
-   /*std::ifstream ifstreamFile("D:/temp/resources/json_test/test.json");
+   std::cout << "Test" ;
+   std::ifstream ifstreamFile("D:/temp/resources/json_test/test.json");
 
    if( !ifstreamFile )
    {
@@ -35,12 +35,12 @@ TEST_CASE("Read JSON file", "[read]")
       std::string stringValue = address_.value().as<std::string>();
 
       std::cout << stringKey << " = " << stringValue << std::endl;;
-   }*/
+   }
 }
 
 TEST_CASE("Write JSON file", "[write]")
 {
-   /*std::ifstream ifstreamFile("D:/temp/resources/json_test/test.json");
+   std::ifstream ifstreamFile("D:/temp/resources/json_test/test.json");
 
    if( !ifstreamFile )
    {
@@ -57,5 +57,4 @@ TEST_CASE("Write JSON file", "[write]")
    std::ofstream ofstreamFile("D:/temp/resources/json_test/test.json");
    ofstreamFile << jsoncons::pretty_print(jsonParse);
    ofstreamFile.close();
-   */
 }
