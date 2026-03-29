@@ -16,4 +16,5 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 #set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake"${CMAKE_MODULE_PATH})
 
 # Include sub-projects.
-add_subdirectory ("tests")
+add_subdirectory("tests")
+add_subdirectory("target/try/cli01")
