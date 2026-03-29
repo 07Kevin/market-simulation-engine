@@ -11,12 +11,11 @@ FetchContent_Declare(ftxui
 
 FetchContent_MakeAvailable(ftxui)
 
-# Create executable
+## cli01
 add_executable(cli01 cli01.cpp)
+target_link_libraries(cli01 PRIVATE ftxui::screen PRIVATE ftxui::dom PRIVATE ftxui::component)
 
-# Link libraries
-target_link_libraries(cli01
-  PRIVATE ftxui::screen
-  PRIVATE ftxui::dom
-  PRIVATE ftxui::component
-)
+
+## cli02
+add_executable(cli02 cli02.cpp)
+target_link_libraries(cli02 PRIVATE ftxui::screen PRIVATE ftxui::dom PRIVATE ftxui::component)
