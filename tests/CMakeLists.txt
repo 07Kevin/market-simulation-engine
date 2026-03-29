@@ -9,7 +9,7 @@ include(include_external)
 # Main executable file
 add_executable (main 
    "main.cpp"
-   ${CMAKE_SOURCE_DIR}/external/catch2/catch_amalgamated.cpp
+   #${CMAKE_SOURCE_DIR}/external/catch2/catch_amalgamated.cpp
 )
 
 target_include_directories(main PRIVATE
