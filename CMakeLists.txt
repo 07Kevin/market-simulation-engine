@@ -11,6 +11,8 @@ endif()
 
 project ("market-simulation-engine")
 
+add_compile_definitions(NOMINMAX)
+
 # ## Pathing
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 #set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake"${CMAKE_MODULE_PATH})

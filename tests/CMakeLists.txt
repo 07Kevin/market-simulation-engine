@@ -54,21 +54,7 @@ set(EXTERNAL_INC ${CMAKE_SOURCE_DIR}/external)
 add_executable(main "main.cpp")
 target_include_directories(main PRIVATE ${EXTERNAL_INC})
 
-# TEST_json
-add_executable(TEST_json 
-    "TEST_json.cpp" 
-    "${EXTERNAL_INC}/catch2/catch_amalgamated.cpp"
-)
-target_include_directories(TEST_json PRIVATE ${EXTERNAL_INC})
 
-# TEST_curl
-add_executable(_TEST_curl 
-    "TEST_curl.cpp" 
-    "${EXTERNAL_INC}/catch2/catch_amalgamated.cpp"
-)
-target_include_directories(_TEST_curl PRIVATE ${EXTERNAL_INC})
-
-<<<<<<< HEAD
 # TEST_json executable file
 add_executable (TEST_json 
    "TEST_json.cpp"
@@ -99,12 +85,5 @@ target_include_directories(_TEST_curl PRIVATE
    
 )
 
-if (CMAKE_VERSION VERSION_GREATER 3.12)
-  set_property(TARGET main PROPERTY CXX_STANDARD 20)
-endif()
-
-# TODO: Add tests and install targets if needed.
-=======
 # Link against the libcurl target created by FetchContent
 target_link_libraries(_TEST_curl PRIVATE libcurl)
->>>>>>> 6d1174097129a41869baa210a8dd02c52f0da2d8
