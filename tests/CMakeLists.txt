@@ -2,7 +2,19 @@
 # project specific logic here.
 #
 cmake_minimum_required(VERSION 3.20)
+project(tests)
+
 include(include_external)
+include(FetchContent)
+
+FetchContent_Declare(
+   curl
+   GIT_REPOSITORY https://github.com/curl/curl.git
+   GIT_TAG curl-8_12_1
+   GIT_SHALLOW    TRUE
+)
+
+FetchContent_MakeAvailable(curl)
 
 # Add source to this project's executable.
 
