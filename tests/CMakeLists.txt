@@ -1,7 +1,7 @@
 ﻿# CMakeList.txt : CMake project for testcmake, include source and define
 # project specific logic here.
 #
-
+cmake_minimum_required(VERSION 3.20)
 include(include_external)
 
 # Add source to this project's executable.
@@ -23,6 +23,17 @@ add_executable (TEST_json
 )
 
 target_include_directories(TEST_json PRIVATE
+   ${CMAKE_SOURCE_DIR}/external
+   
+)
+
+# TEST_curl executable file
+add_executable (TEST_curl 
+   "TEST_curl.cpp"
+   ${CMAKE_SOURCE_DIR}/external/catch2/catch_amalgamated.cpp
+)
+
+target_include_directories(TEST_curl PRIVATE
    ${CMAKE_SOURCE_DIR}/external
    
 )
