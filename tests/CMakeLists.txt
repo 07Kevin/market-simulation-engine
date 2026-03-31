@@ -1,20 +1,36 @@
-﻿# CMakeList.txt : CMake project for testcmake, include source and define
-# project specific logic here.
-#
-cmake_minimum_required(VERSION 3.20)
+﻿cmake_minimum_required(VERSION 3.20)
 project(tests)
 
-# === Enable C++20 for the entire project ===
+# === Global Settings ===
 set(CMAKE_CXX_STANDARD          20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS        OFF)   # optional but recommended (disables GNU extensions)
+set(CMAKE_CXX_EXTENSIONS        OFF)
 
-include(include_external)
 include(FetchContent)
-
+include(include_external)
 
 # ================================================================
-# Fetch and configure curl
+# 1. PRE-CONFIGURATION (Crucial: Must be BEFORE FetchContent)
+# ================================================================
+# This stops curl from bringing in 50 extra projects/tests
+set(BUILD_CURL_EXE      OFF CACHE INTERNAL "")
+set(BUILD_TESTING       OFF CACHE INTERNAL "")
+set(BUILD_SHARED_LIBS   OFF CACHE INTERNAL "")
+set(CURL_BUILD_TESTS    OFF CACHE INTERNAL "")
+set(CURL_BUILD_EXAMPLES OFF CACHE INTERNAL "")
+set(CURL_USE_LIBPSL     OFF CACHE INTERNAL "")
+set(CMAKE_USE_LIBIDN2   OFF CACHE INTERNAL "")
+set(CURL_USE_NGHTTP2    OFF CACHE INTERNAL "")
+set(CURL_USE_ZSTD       OFF CACHE INTERNAL "")
+set(CURL_USE_BROTLI     OFF CACHE INTERNAL "")
+
+# Disable protocols you don't need to speed up build & reduce noise
+set(CURL_DISABLE_LDAP   ON CACHE INTERNAL "")
+set(CURL_DISABLE_FTP    ON CACHE INTERNAL "")
+set(CURL_DISABLE_SMTP   ON CACHE INTERNAL "")
+
+# ================================================================
+# 2. FETCH CURL
 # ================================================================
 FetchContent_Declare(
     curl
@@ -23,40 +39,36 @@ FetchContent_Declare(
     GIT_SHALLOW    TRUE
 )
 
-# Disable everything that causes problems with FetchContent on Windows
-set(BUILD_TESTING          OFF CACHE INTERNAL "")
-set(CURL_BUILD_TESTS       OFF CACHE INTERNAL "")
-set(CURL_BUILD_EXAMPLES    OFF CACHE INTERNAL "")
-set(CURL_BUILD_TOOLS       OFF CACHE INTERNAL "")
-set(BUILD_CURL_EXE         OFF CACHE INTERNAL "")
+# This command effectively does the "Populate" and "add_subdirectory" 
+# logic for you in one clean step.
+FetchContent_MakeAvailable(curl)
 
-set(CURL_USE_LIBPSL        OFF CACHE INTERNAL "")
-set(CMAKE_USE_LIBIDN2      OFF CACHE INTERNAL "")
-set(CURL_USE_NGHTTP2       OFF CACHE INTERNAL "")
-set(CURL_USE_ZSTD          OFF CACHE INTERNAL "")
-set(CURL_USE_BROTLI        OFF CACHE INTERNAL "")
+# ================================================================
+# 3. YOUR EXECUTABLES
+# ================================================================
 
-# Optional: build curl as static library (recommended with FetchContent)
-set(BUILD_SHARED_LIBS      OFF CACHE INTERNAL "")
+# Common include path
+set(EXTERNAL_INC ${CMAKE_SOURCE_DIR}/external)
 
-# === THIS IS THE IMPORTANT CHANGE ===
-FetchContent_GetProperties(curl)
-if(NOT curl_POPULATED)
-    FetchContent_Populate(curl)
-    add_subdirectory(${curl_SOURCE_DIR} ${curl_BINARY_DIR} EXCLUDE_FROM_ALL)
-endif()
-# Add source to this project's executable.
+# Main executable
+add_executable(main "main.cpp")
+target_include_directories(main PRIVATE ${EXTERNAL_INC})
 
-# Main executable file
-add_executable (main 
-   "main.cpp"
-   #${CMAKE_SOURCE_DIR}/external/catch2/catch_amalgamated.cpp
+# TEST_json
+add_executable(TEST_json 
+    "TEST_json.cpp" 
+    "${EXTERNAL_INC}/catch2/catch_amalgamated.cpp"
 )
+target_include_directories(TEST_json PRIVATE ${EXTERNAL_INC})
 
-target_include_directories(main PRIVATE
-   ${CMAKE_SOURCE_DIR}/external
+# TEST_curl
+add_executable(_TEST_curl 
+    "TEST_curl.cpp" 
+    "${EXTERNAL_INC}/catch2/catch_amalgamated.cpp"
 )
+target_include_directories(_TEST_curl PRIVATE ${EXTERNAL_INC})
 
+<<<<<<< HEAD
 # TEST_json executable file
 add_executable (TEST_json 
    "TEST_json.cpp"
@@ -92,3 +104,7 @@ if (CMAKE_VERSION VERSION_GREATER 3.12)
 endif()
 
 # TODO: Add tests and install targets if needed.
+=======
+# Link against the libcurl target created by FetchContent
+target_link_libraries(_TEST_curl PRIVATE libcurl)
+>>>>>>> 6d1174097129a41869baa210a8dd02c52f0da2d8
