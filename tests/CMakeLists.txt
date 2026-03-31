@@ -72,7 +72,10 @@ target_include_directories(TEST_json PRIVATE
 add_executable (_TEST_curl 
    "TEST_curl.cpp"
    ${CMAKE_SOURCE_DIR}/external/catch2/catch_amalgamated.cpp
+)
 
+target_include_directories(_TEST_curl PRIVATE
+   ${CMAKE_SOURCE_DIR}/external 
 )
 
 # Link curl **AFTER** add_executable, not inside it
