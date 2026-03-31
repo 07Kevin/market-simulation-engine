@@ -6,8 +6,8 @@ set(CMAKE_CXX_STANDARD          20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS        OFF)
 
-include(FetchContent)
 include(include_external)
+include(FetchContent)
 
 # ================================================================
 # 1. PRE-CONFIGURATION (Crucial: Must be BEFORE FetchContent)
@@ -24,10 +24,14 @@ set(CURL_USE_NGHTTP2    OFF CACHE INTERNAL "")
 set(CURL_USE_ZSTD       OFF CACHE INTERNAL "")
 set(CURL_USE_BROTLI     OFF CACHE INTERNAL "")
 
+# This is the key line — tells curl to use Windows' built-in SSL
+set(CURL_USE_SCHANNEL   ON  CACHE INTERNAL "")
+
 # Disable protocols you don't need to speed up build & reduce noise
 set(CURL_DISABLE_LDAP   ON CACHE INTERNAL "")
 set(CURL_DISABLE_FTP    ON CACHE INTERNAL "")
 set(CURL_DISABLE_SMTP   ON CACHE INTERNAL "")
+
 
 # ================================================================
 # 2. FETCH CURL
@@ -42,6 +46,8 @@ FetchContent_Declare(
 # This command effectively does the "Populate" and "add_subdirectory" 
 # logic for you in one clean step.
 FetchContent_MakeAvailable(curl)
+
+#find_package(CURL REQUIRED)
 
 # ================================================================
 # 3. YOUR EXECUTABLES
@@ -77,13 +83,13 @@ target_include_directories(_TEST_curl PRIVATE
 )
 
 # Link curl **AFTER** add_executable, not inside it
-target_link_libraries(_TEST_curl PRIVATE libcurl)
+#target_link_libraries(_TEST_curl CURL::libcurl)
 
 
-target_include_directories(_TEST_curl PRIVATE
-   ${CMAKE_SOURCE_DIR}/external
-   
-)
+#target_include_directories(_TEST_curl PRIVATE
+#   ${CMAKE_SOURCE_DIR}/external
+#   
+#)
 
 # Link against the libcurl target created by FetchContent
 target_link_libraries(_TEST_curl PRIVATE libcurl)
