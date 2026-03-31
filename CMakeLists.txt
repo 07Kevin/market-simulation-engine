@@ -9,6 +9,9 @@ if (POLICY CMP0141)
   set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "$<IF:$<AND:$<C_COMPILER_ID:MSVC>,$<CXX_COMPILER_ID:MSVC>>,$<$<CONFIG:Debug,RelWithDebInfo>:EditAndContinue>,$<$<CONFIG:Debug,RelWithDebInfo>:ProgramDatabase>>")
 endif()
 
+# Enable folders in Visual Studio
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
 project ("market-simulation-engine")
 
 # ## Pathing
