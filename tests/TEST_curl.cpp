@@ -19,7 +19,7 @@ size_t WriteCallBack(void* pContents, size_t uSize, size_t uMembers, std::string
 
 TEST_CASE("Read stock data", "[read]")
 {
-   CURL* pCurl = curl_easy_init();
+   /*CURL* pCurl = curl_easy_init();
    std::string stringResponse;
    
 
@@ -29,8 +29,8 @@ TEST_CASE("Read stock data", "[read]")
    std::string stringAPIKey = "ID3VG6TYQPW0DGMH";
    std::string stringUrl = "https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=" + stringStock + "&apikey=" + stringAPIKey;     //     function=TIME_SERIES_INTRADAY  / "&interval=5min&apikey="
 
-   //curl_easy_setopt(pCurl, CURLOPT_URL, "https://query2.finance.yahoo.com/v7/finance/quote?symbols=INVE-B.ST");
-   curl_easy_setopt(pCurl, CURLOPT_URL, stringUrl.c_str());
+   //curl_easy_setopt(pCurl, CURLOPT_URL, "https://query1.finance.yahoo.com/v8/finance/chart/INVE-B.ST?range=1y&interval=1d"); // "https://query1.finance.yahoo.com/v8/finance/chart/AAPL?period1=1577836800&period2=1609459200&interval=1d"); //
+   //curl_easy_setopt(pCurl, CURLOPT_URL, stringUrl.c_str());
    curl_easy_setopt(pCurl, CURLOPT_WRITEFUNCTION, WriteCallBack);
    curl_easy_setopt(pCurl, CURLOPT_WRITEDATA, &stringResponse);
    curl_easy_setopt(pCurl, CURLOPT_USERAGENT, "Mozilla/5.0");
@@ -55,5 +55,45 @@ TEST_CASE("Read stock data", "[read]")
    std::string stringPrice = jsonParse["Global Quote"]["05. price"].as<std::string>();
 
    std::cout << "current price: " << stringPrice << std::endl;
+     */
+}
 
+TEST_CASE("Read stock data2", "[read]")
+{
+   CURL *pCurl = curl_easy_init();
+   CURLcode curlcodeResult;
+
+   std::string stringResponse;
+
+   if ( pCurl == NULL )
+   {
+      fprintf(stderr, "HTTP request failed\n");
+      return;
+   }
+
+   // Settings
+
+   std::string stringStock = "INVE-B.ST";
+   std::string stringRange = "1mo";
+   std::string stringInterval = "1d";
+   std::string stringURL = "https://query1.finance.yahoo.com/v8/finance/chart/" + stringStock + "?range=" + stringRange + "&interval=" + stringInterval;
+   
+   curl_easy_setopt(pCurl, CURLOPT_URL, stringURL.c_str());
+
+   curl_easy_setopt(pCurl, CURLOPT_WRITEFUNCTION, WriteCallBack);
+   curl_easy_setopt(pCurl, CURLOPT_WRITEDATA, &stringResponse);
+   curl_easy_setopt(pCurl, CURLOPT_USERAGENT, "Mozilla/5.0");
+
+   curlcodeResult = curl_easy_perform(pCurl);
+   curl_easy_cleanup(pCurl);
+
+   if( curlcodeResult != CURLE_OK )
+   {
+      fprintf(stderr, "Error: %s\n", curl_easy_strerror(curlcodeResult));
+      return;
+   }
+
+   //std::cout << stringResponse << "\n";
+   jsoncons::json jsonParse = jsoncons::json::parse(stringResponse);
+   std::cout << jsoncons::pretty_print(jsonParse) << "\n";   
 }
