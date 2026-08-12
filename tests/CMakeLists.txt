@@ -17,7 +17,7 @@ set(BUILD_CURL_EXE      OFF CACHE INTERNAL "")
 set(BUILD_TESTING       OFF CACHE INTERNAL "")
 set(BUILD_SHARED_LIBS   OFF CACHE INTERNAL "")
 set(CURL_BUILD_TESTS    OFF CACHE INTERNAL "")
-set(CURL_BUILD_EXAMPLES OFF CACHE INTERNAL "")
+set(BUILD_EXAMPLES OFF CACHE INTERNAL "")
 set(CURL_USE_LIBPSL     OFF CACHE INTERNAL "")
 set(CMAKE_USE_LIBIDN2   OFF CACHE INTERNAL "")
 set(CURL_USE_NGHTTP2    OFF CACHE INTERNAL "")
@@ -60,6 +60,17 @@ set(EXTERNAL_INC ${CMAKE_SOURCE_DIR}/external)
 add_executable(main "main.cpp")
 target_include_directories(main PRIVATE ${EXTERNAL_INC})
 
+# add_executable(main
+#   "main.cpp"
+#   ${external_imgui}
+#   ${external_implot}
+#)
+
+#target_include_directories(main PRIVATE
+#   ${CMAKE_SOURCE_DIR}/external
+#   ${CMAKE_SOURCE_DIR}/external/imgui
+#   ${CMAKE_SOURCE_DIR}/external/implot
+#)
 
 # TEST_json executable file
 add_executable (TEST_json 
@@ -69,7 +80,6 @@ add_executable (TEST_json
 
 target_include_directories(TEST_json PRIVATE
    ${CMAKE_SOURCE_DIR}/external
-   
 )
 
 # TEST_curl executable file
@@ -81,6 +91,17 @@ add_executable (_TEST_curl
 target_include_directories(_TEST_curl PRIVATE
    ${CMAKE_SOURCE_DIR}/external 
 )
+
+# TEST_imgui executable file
+add_executable (_TEST_imgui 
+   "TEST_imgui.cpp"
+   ${CMAKE_SOURCE_DIR}/external/catch2/catch_amalgamated.cpp
+)
+
+target_include_directories(_TEST_imgui PRIVATE
+   ${CMAKE_SOURCE_DIR}/external 
+)
+
 
 # Link curl **AFTER** add_executable, not inside it
 #target_link_libraries(_TEST_curl CURL::libcurl)
