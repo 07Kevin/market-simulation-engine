@@ -50,15 +50,42 @@ FetchContent_MakeAvailable(curl)
 #find_package(CURL REQUIRED)
 
 # ================================================================
-# 3. YOUR EXECUTABLES
+# 3. FETCH GLFW
+# ================================================================
+
+set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_TESTS    OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_DOCS     OFF CACHE BOOL "" FORCE)
+
+FetchContent_Declare(
+    glfw
+    GIT_REPOSITORY https://github.com/glfw/glfw.git
+    GIT_TAG        3.4
+    GIT_SHALLOW    TRUE
+)
+
+FetchContent_MakeAvailable(glfw)
+
+# ================================================================
+# 4. YOUR EXECUTABLES
 # ================================================================
 
 # Common include path
 set(EXTERNAL_INC ${CMAKE_SOURCE_DIR}/external)
 
 # Main executable
-add_executable(main "main.cpp")
-target_include_directories(main PRIVATE ${EXTERNAL_INC})
+add_executable(main 
+   main.cpp
+   main.h
+)
+#target_include_directories(main PRIVATE ${EXTERNAL_INC})
+target_include_directories(main PRIVATE
+   ${CMAKE_SOURCE_DIR}/external
+   ${CMAKE_SOURCE_DIR}/external/imgui
+   ${CMAKE_SOURCE_DIR}/external/implot
+)
+
+target_link_libraries(main PRIVATE glfw opengl32)
 
 # add_executable(main
 #   "main.cpp"

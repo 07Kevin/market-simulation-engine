@@ -51,12 +51,7 @@ file(GLOB external_imgui
 
 # implot code, plotting library for imgui
 file(GLOB external_implot
-   ${CMAKE_SOURCE_DIR}/external_implot/*.cpp
-)
-
-# glfw code, window management
-file(GLOB external_glfw
-   ${CMAKE_SOURCE_DIR}/external_glfw/*.cpp
+   ${CMAKE_SOURCE_DIR}/external/implot/*.cpp
 )
 
 # source root classes
