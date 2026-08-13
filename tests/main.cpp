@@ -40,7 +40,7 @@ int main()
 
 	// -----------------
 
-	float triangleColor[4] = { 1.0f, 0.0f, 0.0f, 1.0f };
+	float triangleColor[4] = { 1.0f, 0.0f, 0.0f };
 
 	while( !glfwWindowShouldClose(pGLFWwindow) )
 	{
@@ -55,7 +55,7 @@ int main()
 		ImGui::NewFrame();
 
 		ImGui::Begin("Triangle");
-		ImGui::ColorEdit4("Triangle Color", triangleColor);
+		ImGui::ColorEdit3("Triangle Color", triangleColor);
 		ImGui::End();
 
 		// OpenGL

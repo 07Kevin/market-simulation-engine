@@ -77,11 +77,15 @@ set(EXTERNAL_INC ${CMAKE_SOURCE_DIR}/external)
 add_executable(main 
    main.cpp
    main.h
+   ${external_imgui}
+   ${external_imgui_backends}
+   ${external_implot}
 )
 #target_include_directories(main PRIVATE ${EXTERNAL_INC})
 target_include_directories(main PRIVATE
    ${CMAKE_SOURCE_DIR}/external
    ${CMAKE_SOURCE_DIR}/external/imgui
+   ${CMAKE_SOURCE_DIR}/external/imgui/backends
    ${CMAKE_SOURCE_DIR}/external/implot
 )
 

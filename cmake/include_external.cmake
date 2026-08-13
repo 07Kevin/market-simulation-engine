@@ -49,6 +49,12 @@ file(GLOB external_imgui
    ${CMAKE_SOURCE_DIR}/external/imgui/*.cpp
 )
 
+# imgui backend code, platform/renderer glue for glfw + opengl3
+file(GLOB external_imgui_backends
+   ${CMAKE_SOURCE_DIR}/external/imgui/backends/imgui_impl_glfw.cpp
+   ${CMAKE_SOURCE_DIR}/external/imgui/backends/imgui_impl_opengl3.cpp
+)
+
 # implot code, plotting library for imgui
 file(GLOB external_implot
    ${CMAKE_SOURCE_DIR}/external/implot/*.cpp
